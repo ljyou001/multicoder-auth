@@ -15,7 +15,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { CredentialManager } from '../../../dist/core/auth/credentialManager.js';
 
-const TEST_DIR = path.join(os.tmpdir(), 'unycode-test-creds');
+const TEST_DIR = path.join(os.tmpdir(), 'multicoder-test-creds');
 
 test('CredentialManager - Initialize and create directories', async () => {
   const credManager = new CredentialManager(TEST_DIR);

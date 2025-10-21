@@ -10,7 +10,7 @@ import { ProfileManager } from '../dist/core/profile/profileManager.js';
 import path from 'node:path';
 import os from 'node:os';
 
-const TEST_DIR = path.join(os.tmpdir(), 'unycode-env-example');
+const TEST_DIR = path.join(os.tmpdir(), 'multicoder-env-example');
 
 async function createProfileFromEnv() {
   console.log('\n🚀 从环境变量创建Profile示例\n');

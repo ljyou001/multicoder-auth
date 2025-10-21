@@ -33,7 +33,7 @@ async function main() {
 
   // 初始化ProfileManager
   const profileManager = new ProfileManager({ 
-    configDir: path.join(os.tmpdir(), 'unycode-simple-example') 
+    configDir: path.join(os.tmpdir(), 'multicoder-simple-example') 
   });
   await profileManager.initialize();
 

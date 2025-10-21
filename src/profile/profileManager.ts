@@ -43,16 +43,27 @@ export class ProfileManager {
   }
 
   getDefaultConfigDir(): string {
-    return path.join(os.homedir(), '.unycode');
+    return path.join(os.homedir(), '.multicoder');
   }
 
   private getLegacyConfigDirs(): string[] {
     const homeDir = os.homedir();
-    return [
+    const legacyRoots = [
+      path.join(homeDir, '.unycode'),
       path.join(homeDir, '.config', 'unycoding'),
       path.join(homeDir, 'AppData', 'Roaming', 'unycoding'),
-      path.join(homeDir, 'Library', 'Application Support', 'unycoding')
+      path.join(homeDir, 'Library', 'Application Support', 'unycoding'),
     ];
+
+    const transitionalRoots = [
+      path.join(homeDir, '.config', 'multicoder'),
+      path.join(homeDir, 'AppData', 'Roaming', 'multicoder'),
+      path.join(homeDir, 'Library', 'Application Support', 'multicoder'),
+    ];
+
+    const uniqueRoots = new Set<string>([...legacyRoots, ...transitionalRoots]);
+    uniqueRoots.delete(this.getDefaultConfigDir());
+    return [...uniqueRoots];
   }
 
   private async migrateLegacyProfiles(): Promise<void> {

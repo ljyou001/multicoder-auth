@@ -1,7 +1,7 @@
 {
-  "name": "@unycode/auth",
+  "name": "@multicoder/auth",
   "version": "1.0.0",
-  "description": "Unycode authentication and profile management module.",
+  "description": "Multicoder authentication and profile management module.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -49,7 +49,7 @@
   "keywords": [
     "auth",
     "profiles",
-    "unycode"
+    "multicoder"
   ],
   "license": "ISC",
   "dependencies": {},

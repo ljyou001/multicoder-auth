@@ -15,7 +15,7 @@ async function quickAuthCheck() {
   console.log('🔍 快速认证状态检查\n');
 
   const profileManager = new ProfileManager({ 
-    configDir: path.join(os.tmpdir(), 'unycode-quick-auth-check') 
+    configDir: path.join(os.tmpdir(), 'multicoder-quick-auth-check') 
   });
   await profileManager.initialize();
 

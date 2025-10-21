@@ -16,7 +16,7 @@ import os from 'node:os';
 import { GeminiAuthenticator, setGeminiHomeDirOverride } from '../../../dist/auth/providers/gemini.js';
 import { CredentialManager } from '../../../dist/auth/credentialManager.js';
 
-const TEST_DIR = path.join(os.tmpdir(), 'unycode-test-gemini');
+const TEST_DIR = path.join(os.tmpdir(), 'multicoder-test-gemini');
 const TEST_GEMINI_DIR = path.join(TEST_DIR, '.gemini');
 
 const originalHomedir = os.homedir;
@@ -25,11 +25,11 @@ os.homedir = () => TEST_DIR;
 const originalHomeEnv = process.env.HOME;
 const originalUserProfile = process.env.USERPROFILE;
 const originalGeminiHome = process.env.GEMINI_HOME_DIR;
-const originalConfigDirEnv = process.env.UNYCODING_CONFIG_DIR;
+const originalConfigDirEnv = process.env.MULTICODER_CONFIG_DIR;
 process.env.HOME = TEST_DIR;
 process.env.USERPROFILE = TEST_DIR;
 process.env.GEMINI_HOME_DIR = TEST_DIR;
-process.env.UNYCODING_CONFIG_DIR = TEST_DIR;
+process.env.MULTICODER_CONFIG_DIR = TEST_DIR;
 
 setGeminiHomeDirOverride(TEST_DIR);
 
@@ -55,9 +55,9 @@ process.on('exit', () => {
   }
 
   if (originalConfigDirEnv === undefined) {
-    delete process.env.UNYCODING_CONFIG_DIR;
+    delete process.env.MULTICODER_CONFIG_DIR;
   } else {
-    process.env.UNYCODING_CONFIG_DIR = originalConfigDirEnv;
+    process.env.MULTICODER_CONFIG_DIR = originalConfigDirEnv;
   }
   setGeminiHomeDirOverride(originalGeminiHome ?? null);
 });

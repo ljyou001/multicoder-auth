@@ -15,7 +15,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { CredentialManager } from '../../../dist/core/auth/credentialManager.js';
 
-const TEST_DIR = path.join(os.tmpdir(), 'unycode-test-all-providers');
+const TEST_DIR = path.join(os.tmpdir(), 'multicoder-test-all-providers');
 
 // Test all providers with API key support
 const API_KEY_PROVIDERS = [

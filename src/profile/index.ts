@@ -3,7 +3,7 @@
  *
  * Responsibilities:
  * - Profile CRUD operations
- * - Persistent storage (~/.unycode/profiles.json)
+ * - Persistent storage (~/.multicoder/profiles.json)
  * - Current profile management
  * - Provider binding tracking
  *

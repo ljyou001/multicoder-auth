@@ -14,7 +14,7 @@ import { ProfileManager } from '../../dist/core/profile/profileManager.js';
 import { CredentialManager } from '../../dist/core/auth/credentialManager.js';
 import { createGeminiAdapter } from '../../dist/core/provider/adapters/geminiCliAdapter.js';
 
-const TEST_DIR = path.join(os.tmpdir(), 'unycode-integration-test');
+const TEST_DIR = path.join(os.tmpdir(), 'multicoder-integration-test');
 
 test('Multi-Profile Switching - Gemini with API Key', { skip: !process.env.GOOGLE_API_KEY }, async () => {
   console.log('\n🔧 Testing Multi-Profile Switching with Gemini...');

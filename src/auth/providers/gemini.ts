@@ -33,7 +33,12 @@ export class GeminiAuthenticator implements ProviderAuthenticator {
     if (geminiHomeOverride) {
       return geminiHomeOverride;
     }
-    return process.env.GEMINI_HOME_DIR ?? process.env.UNYCODING_GEMINI_HOME ?? homedir();
+    return (
+      process.env.GEMINI_HOME_DIR ??
+      process.env.MULTICODER_GEMINI_HOME ??
+      process.env.UNYCODING_GEMINI_HOME ??
+      homedir()
+    );
   }
 
   async getAuthOptions(profileName: string): Promise<AuthOption[]> {
@@ -736,4 +741,3 @@ export class GeminiAuthenticator implements ProviderAuthenticator {
     await this.updateSettingsForOAuth();
   }
 }
-

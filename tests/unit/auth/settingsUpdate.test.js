@@ -13,7 +13,7 @@ import assert from 'node:assert';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-const TEST_DIR = path.join(os.tmpdir(), 'unycode-test-settings');
+const TEST_DIR = path.join(os.tmpdir(), 'multicoder-test-settings');
 const TEST_GEMINI_DIR = path.join(TEST_DIR, '.gemini');
 
 // Mock the homedir to use our test directory

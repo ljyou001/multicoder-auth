@@ -20,15 +20,21 @@ export interface EnvQueryOptions {
   preferProcess?: boolean;
 }
 
-const POSIX_HEADER = '# Managed by unycode-auth SystemEnvironmentManager';
-const CONFIG_ROOT = path.join(os.homedir(), '.unycode');
+const POSIX_HEADER = '# Managed by multicoder-auth SystemEnvironmentManager';
+const CONFIG_ROOT = path.join(os.homedir(), '.multicoder');
 const USER_ENV_FILE = path.join(CONFIG_ROOT, 'env.sh');
-const LEGACY_POSIX_CONFIG_DIR = path.join(os.homedir(), '.config', 'unycoding');
-const LEGACY_USER_ENV_FILE = path.join(LEGACY_POSIX_CONFIG_DIR, 'env.sh');
-const LEGACY_MAC_LAUNCHCTL_SCRIPT = path.join(LEGACY_POSIX_CONFIG_DIR, 'mac-launchctl-env.sh');
-const SYSTEM_ENV_FILE = '/etc/profile.d/unycode.sh';
-const LEGACY_SYSTEM_ENV_FILE = '/etc/profile.d/unycoding.sh';
-const MAC_LAUNCH_AGENT_LABEL = 'com.unycoding.env';
+const LEGACY_CONFIG_ROOTS = [
+  path.join(os.homedir(), '.unycode'),
+  path.join(os.homedir(), '.config', 'unycoding'),
+  path.join(os.homedir(), 'AppData', 'Roaming', 'unycoding'),
+  path.join(os.homedir(), 'Library', 'Application Support', 'unycoding'),
+  path.join(os.homedir(), '.config', 'multicoder'),
+];
+const LEGACY_USER_ENV_FILES = LEGACY_CONFIG_ROOTS.map((root) => path.join(root, 'env.sh'));
+const LEGACY_MAC_LAUNCHCTL_SCRIPTS = LEGACY_CONFIG_ROOTS.map((root) => path.join(root, 'mac-launchctl-env.sh'));
+const SYSTEM_ENV_FILE = '/etc/profile.d/multicoder.sh';
+const LEGACY_SYSTEM_ENV_FILES = ['/etc/profile.d/unycode.sh', '/etc/profile.d/unycoding.sh'];
+const MAC_LAUNCH_AGENT_LABEL = 'com.multicoder.env';
 const MAC_LAUNCH_AGENT_PATH = path.join(
   os.homedir(),
   'Library',
@@ -36,14 +42,14 @@ const MAC_LAUNCH_AGENT_PATH = path.join(
   `${MAC_LAUNCH_AGENT_LABEL}.plist`
 );
 const MAC_LAUNCHCTL_SCRIPT = path.join(CONFIG_ROOT, 'mac-launchctl-env.sh');
-const POSIX_SHELL_SENTINEL_BEGIN = '# >>> unycode-auth env >>>';
-const POSIX_SHELL_SENTINEL_END = '# <<< unycode-auth env <<<';
+const POSIX_SHELL_SENTINEL_BEGIN = '# >>> multicoder-auth env >>>';
+const POSIX_SHELL_SENTINEL_END = '# <<< multicoder-auth env <<<';
 
 /**
  * SystemEnvironmentManager encapsulates cross-platform environment variable persistence.
  * - Windows: leverages PowerShell's [Environment] API to modify user/system scopes.
- * - macOS: persists to ~/.unycode/env.sh, ensures shells source it, and mirrors values with launchctl so GUI apps receive them.
- * - Linux: writes export statements to managed profile files (user: ~/.unycode/env.sh, system: /etc/profile.d/unycode.sh) and injects sourcing blocks into common shell startup files.
+ * - macOS: persists to ~/.multicoder/env.sh, ensures shells source it, and mirrors values with launchctl so GUI apps receive them.
+ * - Linux: writes export statements to managed profile files (user: ~/.multicoder/env.sh, system: /etc/profile.d/multicoder.sh) and injects sourcing blocks into common shell startup files.
  *
  * Note: mutating system-level values typically requires elevated permissions.
  */
@@ -53,11 +59,9 @@ export class SystemEnvironmentManager {
 
   constructor() {
     this.performLegacyMigration();
-    this.systemEnvFile = fsSync.existsSync(SYSTEM_ENV_FILE)
-      ? SYSTEM_ENV_FILE
-      : fsSync.existsSync(LEGACY_SYSTEM_ENV_FILE)
-        ? LEGACY_SYSTEM_ENV_FILE
-        : SYSTEM_ENV_FILE;
+    const candidateSystemFiles = [SYSTEM_ENV_FILE, ...LEGACY_SYSTEM_ENV_FILES];
+    const existingSystemFile = candidateSystemFiles.find((file) => fsSync.existsSync(file));
+    this.systemEnvFile = existingSystemFile ?? SYSTEM_ENV_FILE;
   }
 
   private performLegacyMigration(): void {
@@ -74,9 +78,17 @@ export class SystemEnvironmentManager {
       // Ignore directory creation errors; later operations will surface issues if needed.
     }
 
-    this.migrateFile(LEGACY_USER_ENV_FILE, USER_ENV_FILE, 0o600);
-    this.migrateFile(LEGACY_MAC_LAUNCHCTL_SCRIPT, MAC_LAUNCHCTL_SCRIPT, 0o755);
-    this.migrateFile(LEGACY_SYSTEM_ENV_FILE, SYSTEM_ENV_FILE, 0o644);
+    for (const legacyEnvFile of LEGACY_USER_ENV_FILES) {
+      this.migrateFile(legacyEnvFile, USER_ENV_FILE, 0o600);
+    }
+
+    for (const legacyLaunchctlScript of LEGACY_MAC_LAUNCHCTL_SCRIPTS) {
+      this.migrateFile(legacyLaunchctlScript, MAC_LAUNCHCTL_SCRIPT, 0o755);
+    }
+
+    for (const legacySystemFile of LEGACY_SYSTEM_ENV_FILES) {
+      this.migrateFile(legacySystemFile, SYSTEM_ENV_FILE, 0o644);
+    }
   }
 
   private migrateFile(source: string, target: string, mode: number): void {
@@ -494,7 +506,7 @@ $vars.GetEnumerator() | ForEach-Object { "{0}={1}" -f $_.Key, $_.Value }
   }
 
   private buildShellBlock(): string {
-    const envRef = '$HOME/.unycode/env.sh';
+    const envRef = '$HOME/.multicoder/env.sh';
     return [
       POSIX_SHELL_SENTINEL_BEGIN,
       `ENV_FILE="${envRef}"`,
@@ -584,8 +596,8 @@ $vars.GetEnumerator() | ForEach-Object { "{0}={1}" -f $_.Key, $_.Value }
   private buildMacLaunchctlScript(envVars: Record<string, string>): string {
     const lines = [
       '#!/bin/sh',
-      '# Managed by unycode-auth SystemEnvironmentManager',
-      'ENV_FILE="$HOME/.unycode/env.sh"',
+      '# Managed by multicoder-auth SystemEnvironmentManager',
+      'ENV_FILE="$HOME/.multicoder/env.sh"',
       'if [ -f "$ENV_FILE" ]; then',
       '  # shellcheck disable=SC1090',
       '  . "$ENV_FILE"',

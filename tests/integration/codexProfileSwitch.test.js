@@ -13,7 +13,7 @@ import os from 'node:os';
 import { ProfileManager } from '../../dist/core/profile/profileManager.js';
 import { CredentialManager } from '../../dist/core/auth/credentialManager.js';
 
-const TEST_DIR = path.join(os.tmpdir(), 'unycode-codex-test');
+const TEST_DIR = path.join(os.tmpdir(), 'multicoder-codex-test');
 
 test('Codex Profile Switching - Native Credentials', async () => {
   console.log('\n🔧 Testing Codex Profile Switching...');

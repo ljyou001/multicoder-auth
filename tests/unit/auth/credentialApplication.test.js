@@ -11,7 +11,7 @@ import assert from 'node:assert';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-const TEST_DIR = path.join(os.tmpdir(), 'unycode-test-credential-application');
+const TEST_DIR = path.join(os.tmpdir(), 'multicoder-test-credential-application');
 const TEST_GEMINI_DIR = path.join(TEST_DIR, '.gemini');
 
 // Mock the homedir to use our test directory
@@ -49,16 +49,16 @@ process.on('exit', () => {
   }
 
   if (originalConfigDirEnv === undefined) {
-    delete process.env.UNYCODING_CONFIG_DIR;
+    delete process.env.MULTICODER_CONFIG_DIR;
   } else {
-    process.env.UNYCODING_CONFIG_DIR = originalConfigDirEnv;
+    process.env.MULTICODER_CONFIG_DIR = originalConfigDirEnv;
   }
 
   setGeminiHomeDirOverride(originalGeminiHome ?? null);
 });
 
-const originalConfigDirEnv = process.env.UNYCODING_CONFIG_DIR;
-process.env.UNYCODING_CONFIG_DIR = TEST_DIR;
+const originalConfigDirEnv = process.env.MULTICODER_CONFIG_DIR;
+process.env.MULTICODER_CONFIG_DIR = TEST_DIR;
 CredentialManager.prototype.getDefaultConfigDir = function () {
   return TEST_DIR;
 };

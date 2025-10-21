@@ -1,7 +1,7 @@
 /**
  * ProfileStore - Persistent profile storage
  *
- * Stores all profiles in ~/.unycode/profiles.json
+ * Stores all profiles in ~/.multicoder/profiles.json
  * Manages current profile selection across sessions
  */
 
@@ -17,18 +17,27 @@ export class ProfileStore {
 
   constructor(homeDir?: string) {
     this.homeDir = homeDir || os.homedir();
-    const unycodeDir = path.join(this.homeDir, '.unycode');
-    this.storePath = path.join(unycodeDir, 'profiles.json');
+    const multicoderDir = path.join(this.homeDir, '.multicoder');
+    this.storePath = path.join(multicoderDir, 'profiles.json');
     this.data = this.load();
   }
 
   private getLegacyStorePaths(): string[] {
     const homeDir = this.homeDir;
-    return [
+    const legacyPaths = [
+      path.join(homeDir, '.unycode', 'profiles.json'),
       path.join(homeDir, '.config', 'unycoding', 'profiles.json'),
       path.join(homeDir, 'AppData', 'Roaming', 'unycoding', 'profiles.json'),
-      path.join(homeDir, 'Library', 'Application Support', 'unycoding', 'profiles.json')
+      path.join(homeDir, 'Library', 'Application Support', 'unycoding', 'profiles.json'),
     ];
+
+    const transitionalPaths = [
+      path.join(homeDir, '.config', 'multicoder', 'profiles.json'),
+      path.join(homeDir, 'AppData', 'Roaming', 'multicoder', 'profiles.json'),
+      path.join(homeDir, 'Library', 'Application Support', 'multicoder', 'profiles.json'),
+    ];
+
+    return [...new Set<string>([...legacyPaths, ...transitionalPaths])];
   }
 
   private createEmptyData(): ProfileStoreData {

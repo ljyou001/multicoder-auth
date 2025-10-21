@@ -15,7 +15,7 @@ import os from 'node:os';
 import { ProfileManager } from '../../../dist/core/profile/profileManager.js';
 import { CredentialManager } from '../../../dist/core/auth/credentialManager.js';
 
-const TEST_DIR = path.join(os.tmpdir(), 'unycode-test-profiles');
+const TEST_DIR = path.join(os.tmpdir(), 'multicoder-test-profiles');
 
 test('ProfileManager - Initialize with credential manager', async () => {
   const credManager = new CredentialManager(TEST_DIR);

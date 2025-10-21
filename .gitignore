@@ -11,6 +11,6 @@ npm-debug.log*
 # Environment variables
 .env
 
-# unycoding specific
-.unycodingignore
+# multicoder specific
+.multicoderignore
 .milestone

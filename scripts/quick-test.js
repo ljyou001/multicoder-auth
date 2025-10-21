@@ -6,7 +6,7 @@ import { ProfileManager } from '../dist/core/profile/profileManager.js';
 import path from 'node:path';
 import os from 'node:os';
 
-const TEST_DIR = path.join(os.tmpdir(), 'unycode-quick-test');
+const TEST_DIR = path.join(os.tmpdir(), 'multicoder-quick-test');
 
 async function quickTest() {
   console.log('\n⚡ 快速测试开始...\n');

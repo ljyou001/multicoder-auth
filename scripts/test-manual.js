@@ -9,7 +9,7 @@ import { CredentialManager } from '../dist/core/auth/credentialManager.js';
 import path from 'node:path';
 import os from 'node:os';
 
-const TEST_CONFIG_DIR = path.join(os.tmpdir(), 'unycode-manual-test');
+const TEST_CONFIG_DIR = path.join(os.tmpdir(), 'multicoder-manual-test');
 
 async function main() {
   console.log('\n🧪 开始手动测试...\n');

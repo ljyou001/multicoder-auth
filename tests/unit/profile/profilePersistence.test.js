@@ -11,7 +11,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { ProfileManager } from '../../../dist/core/profile/profileManager.js';
 
-const TEST_DIR = path.join(os.tmpdir(), 'unycode-test-profile-persistence');
+const TEST_DIR = path.join(os.tmpdir(), 'multicoder-test-profile-persistence');
 
 test('ProfileManager - Save and load profiles', async () => {
   console.log('\n🧪 Testing Profile Persistence...');
@@ -104,7 +104,7 @@ test('ProfileManager - Save and load profiles', async () => {
 test('ProfileManager - Handle missing profiles.json gracefully', async () => {
   console.log('\n🧪 Testing missing profiles.json...');
 
-  const testDir = path.join(os.tmpdir(), 'unycode-test-no-profiles');
+  const testDir = path.join(os.tmpdir(), 'multicoder-test-no-profiles');
 
   // Ensure directory doesn't exist
   await fs.rm(testDir, { recursive: true, force: true });

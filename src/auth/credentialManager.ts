@@ -89,7 +89,7 @@ export class CredentialManager {
   managedCredentialsDir: string;
 
   constructor(baseDir?: string) {
-    const envConfigDir = process.env.UNYCODING_CONFIG_DIR;
+    const envConfigDir = process.env.MULTICODER_CONFIG_DIR ?? process.env.UNYCODING_CONFIG_DIR;
     const resolvedEnvDir = envConfigDir ? path.resolve(envConfigDir) : null;
     this.hasCustomBaseDir = Boolean(baseDir ?? resolvedEnvDir);
     const configDir = baseDir ?? resolvedEnvDir ?? this.getDefaultConfigDir();
@@ -98,16 +98,27 @@ export class CredentialManager {
   }
 
   getDefaultConfigDir(): string {
-    return path.join(os.homedir(), '.unycode');
+    return path.join(os.homedir(), '.multicoder');
   }
 
   private getLegacyConfigDirs(): string[] {
     const homeDir = os.homedir();
-    return [
+    const legacyRoots = [
+      path.join(homeDir, '.unycode'),
       path.join(homeDir, '.config', 'unycoding'),
       path.join(homeDir, 'AppData', 'Roaming', 'unycoding'),
-      path.join(homeDir, 'Library', 'Application Support', 'unycoding')
+      path.join(homeDir, 'Library', 'Application Support', 'unycoding'),
     ];
+
+    const transitionalRoots = [
+      path.join(homeDir, '.config', 'multicoder'),
+      path.join(homeDir, 'AppData', 'Roaming', 'multicoder'),
+      path.join(homeDir, 'Library', 'Application Support', 'multicoder'),
+    ];
+
+    const uniqueRoots = new Set<string>([...legacyRoots, ...transitionalRoots]);
+    uniqueRoots.delete(this.getDefaultConfigDir());
+    return [...uniqueRoots];
   }
 
   /**

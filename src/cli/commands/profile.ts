@@ -14,7 +14,7 @@ export async function handleProfileCommand(
       const current = store.getCurrentName();
 
       if (profiles.length === 0) {
-        console.log('No profiles found. Create one with: unycode-auth profile create <name>');
+        console.log('No profiles found. Create one with: coders profile create <name>');
         return;
       }
 
@@ -54,7 +54,7 @@ export async function handleProfileCommand(
       const name = args[0];
       if (!name) {
         console.error('Profile name is required');
-        console.error('Usage: unycode-auth profile create <name>');
+        console.error('Usage: coders profile create <name>');
         process.exit(1);
       }
 
@@ -91,7 +91,7 @@ export async function handleProfileCommand(
       const name = args[0];
       if (!name) {
         console.error('Profile name is required');
-        console.error('Usage: unycode-auth profile switch <name>');
+        console.error('Usage: coders profile switch <name>');
         process.exit(1);
       }
 
@@ -105,7 +105,7 @@ export async function handleProfileCommand(
       const name = args[0];
       if (!name) {
         console.error('Profile name is required');
-        console.error('Usage: unycode-auth profile delete <name>');
+        console.error('Usage: coders profile delete <name>');
         process.exit(1);
       }
 
@@ -123,7 +123,7 @@ export async function handleProfileCommand(
       const current = store.getCurrentName();
       if (!current) {
         console.log('No profile selected');
-        console.log('Create one with: unycode-auth profile create <name>');
+        console.log('Create one with: coders profile create <name>');
         return;
       }
 
@@ -168,7 +168,7 @@ export async function handleProfileCommand(
 
     default:
       console.error(`Unknown profile subcommand: ${subcommand}`);
-      console.error('Run "unycode-auth --help" for usage information');
+      console.error('Run "coders --help" for usage information');
       process.exit(1);
   }
 }
@@ -199,7 +199,7 @@ export async function handleCreateFromEnvCommand(context: CliContext, args: stri
         console.log(`  ${index + 1}. ${env} (${preview})`);
       });
       console.log(
-        'Please specify the environment variable: unycode-auth profile create-from-env <env-var> [profile-name]'
+        'Please specify the environment variable: coders profile create-from-env <env-var> [profile-name]'
       );
       return;
     }
@@ -226,7 +226,7 @@ export async function handleCreateFromConfigCommand(context: CliContext, args: s
 
   if (!profileName) {
     console.error('Profile name is required');
-    console.error('Usage: unycode-auth profile create-from-config <name>');
+    console.error('Usage: coders profile create-from-config <name>');
     process.exit(1);
   }
 

@@ -10,7 +10,7 @@ import {
 function showHelp(providerIds: string[]): void {
   const providers = providerIds.join(', ');
   console.log(`
-unycode-auth - Authentication and Profile Management
+coders - Authentication and Profile Management
 
 PROFILE COMMANDS:
   profile list                 List all profiles
@@ -79,7 +79,7 @@ export async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise
 
       default:
         console.error(`Unknown command: ${command}`);
-        console.error('Run "unycode-auth --help" for usage information');
+        console.error('Run "coders --help" for usage information');
         process.exit(1);
     }
   } catch (error) {

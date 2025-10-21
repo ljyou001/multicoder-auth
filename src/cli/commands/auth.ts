@@ -15,7 +15,7 @@ export async function handleLoginCommand(
 
   if (!providerId) {
     console.error('Provider is required');
-    console.error('Usage: unycode-auth login <provider>');
+    console.error('Usage: coders login <provider>');
     console.error(`Providers: ${registry.listIds().join(', ')}`);
     process.exit(1);
   }
@@ -138,7 +138,7 @@ export async function handleLoginCommand(
 
   if (!profileName) {
     console.error('No profile selected');
-    console.error('Create one with: unycode-auth profile create <name>');
+    console.error('Create one with: coders profile create <name>');
     process.exit(1);
   }
 
@@ -253,7 +253,7 @@ export async function handleLogoutCommand(
 
   if (!providerId) {
     console.error('Provider is required');
-    console.error('Usage: unycode-auth logout <provider>');
+    console.error('Usage: coders logout <provider>');
     process.exit(1);
   }
 
@@ -397,4 +397,3 @@ export async function authenticateWithApiKey(
     lastAuth: Date.now(),
   });
 }
-

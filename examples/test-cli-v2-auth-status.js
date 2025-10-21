@@ -27,7 +27,7 @@ async function testCliV2AuthStatus() {
   ];
 
   for (const [command, ...args] of testCommands) {
-    console.log(`\n🔧 测试命令: unycode-auth ${[command, ...args].join(' ')}`);
+    console.log(`\n🔧 测试命令: coders ${[command, ...args].join(' ')}`);
     console.log('─'.repeat(50));
     
     try {
@@ -65,6 +65,5 @@ function runCommand(command, args) {
 
 // 运行测试
 testCliV2AuthStatus().catch(console.error);
-
 
 
