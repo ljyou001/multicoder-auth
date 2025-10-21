@@ -1,6 +1,6 @@
 {
   "name": "multicoder",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Unified authentication and profile management for multi-provider AI development - supporting Anthropic Claude, Google Gemini, OpenAI/Codex, Amazon Q, and more.",
   "type": "module",
   "main": "./dist/index.js",
@@ -10,6 +10,7 @@
   },
   "files": [
     "dist",
+    "asset",
     "README.md",
     "readme_zh.md",
     "LICENSE"
