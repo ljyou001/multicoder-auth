@@ -1,0 +1,61 @@
+
+  private async executeOAuthLogin(): Promise<void> {
+    console.log('\nGemini CLI will open browser for authentication...');
+    console.log('Clearing cached credentials to force new OAuth flow...\n');
+
+    // First, try to clear cached credentials
+    await this.clearCachedCredentials();
+
+    return new Promise((resolve, reject) => {
+      const isWindows = process.platform === 'win32';
+      const command = isWindows ? 'gemini.cmd' : 'gemini';
+
+      // Run a simple query to trigger OAuth if needed
+      const child = spawn(command, ['hello'], {
+        stdio: 'inherit',
+        shell: isWindows,
+      });
+
+      child.on('error', (error) => {
+        reject(new Error(`Failed to execute gemini: ${error.message}`));
+      });
+
+      child.on('exit', (code) => {
+        if (code === 0) {
+          console.log('\n✓ Authentication completed!');
+          resolve();
+        } else {
+          // Even if query fails, OAuth might have succeeded
+          console.log('\nNote: If browser opened and you authenticated, that\'s all you need.');
+          resolve();
+        }
+      });
+    });
+  }
+
+  private async clearCachedCredentials(): Promise<void> {
+    const os = await import('node:os');
+    const path = await import('node:path');
+    const fs = await import('node:fs');
+
+    // Clear OAuth credentials
+    const oauthPath = path.join(os.homedir(), '.gemini', 'oauth_creds.json');
+    if (await this.fileExists(oauthPath)) {
+      await fs.promises.unlink(oauthPath);
+      console.log('✓ Cleared cached OAuth credentials');
+    }
+
+    // Clear .env file API key
+    const envPath = path.join(os.homedir(), '.gemini', '.env');
+    if (await this.fileExists(envPath)) {
+      const content = await fs.promises.readFile(envPath, 'utf-8');
+      
+      // Parse existing environment variables
+      const envVars: Record<string, string> = {};
+      const lines = content.split('\n');
+      for (const line of lines) {
+        const trimmedLine = line.trim();
+        if (trimmedLine && !trimmedLine.startsWith('#')) {
+          const equalIndex = trimmedLine.indexOf('=');
+          if (equalIndex > 0) {
+            const key = trimmedLine.substring(0, equalIndex).trim();

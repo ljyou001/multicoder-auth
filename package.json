@@ -1,0 +1,61 @@
+{
+  "name": "@unycode/auth",
+  "version": "1.0.0",
+  "description": "Unycode authentication and profile management module.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "examples",
+    "scripts",
+    "tests"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./auth/*": "./dist/auth/*.js",
+    "./profile/*": "./dist/profile/*.js",
+    "./core/*": "./dist/core/*.js",
+    "./examples/*": "./examples/*",
+    "./scripts/*": "./scripts/*",
+    "./tests/*": "./tests/*"
+  },
+  "typesVersions": {
+    "*": {
+      "auth/*": [
+        "dist/auth/*.d.ts"
+      ],
+      "profile/*": [
+        "dist/profile/*.d.ts"
+      ],
+      "core/*": [
+        "dist/core/*.d.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist",
+    "test": "npm run build && node --test tests/unit",
+    "test:quick": "npm run build && node scripts/test-installed.js",
+    "test:codex": "npm run build && node --test tests/unit/providers/codex.test.js",
+    "test:codex-credentials": "npm run build && node scripts/test-codex-credentials.js",
+    "test:gemini": "npm run build && node --test tests/unit/providers/gemini.test.js",
+    "test:claude": "npm run build && node --test tests/unit/providers/claude.test.js"
+  },
+  "keywords": [
+    "auth",
+    "profiles",
+    "unycode"
+  ],
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "rimraf": "^5.0.7",
+    "typescript": "^5.3.3"
+  }
+}
