@@ -1,8 +1,12 @@
+# multicoder
+
 <div align="center">
+
+<img src="./asset/icon.png" alt="multicoder icon" width="160" />
 
 **Unified Authentication & Profile Management for Multi-Provider AI Development**
 
-[![npm version](https://img.shields.io/npm/v/@multicoder/auth.svg)](https://www.npmjs.com/package/@multicoder/auth)
+[![npm version](https://img.shields.io/npm/v/multicoder.svg)](https://www.npmjs.com/package/multicoder)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 
@@ -14,11 +18,11 @@
 
 ## Overview
 
-**@multicoder/auth** is a comprehensive authentication and profile management solution designed for developers working with multiple AI providers. It provides a unified interface to manage credentials, switch between profiles, and maintain consistent authentication state across Anthropic Claude, Google Gemini, OpenAI/Codex, Amazon Q, and more.
+**multicoder** is a comprehensive authentication and profile management solution designed for developers working with multiple AI providers. It provides a unified interface to manage credentials, switch between profiles, and maintain consistent authentication state across Anthropic Claude, Google Gemini, OpenAI/Codex, Amazon Q, and more.
 
-Whether you're building automation tools, desktop applications, or command-line utilities, @multicoder/auth eliminates the complexity of managing multiple API keys and OAuth flows across different providers.
+Whether you're building automation tools, desktop applications, or command-line utilities, multicoder eliminates the complexity of managing multiple API keys and OAuth flows across different providers.
 
-## Why @multicoder/auth?
+## Why multicoder?
 
 - **🔐 Unified Authentication**: One consistent API for all AI providers
 - **👤 Profile Management**: Easily switch between different development contexts
@@ -64,13 +68,13 @@ coders status
 ## Installation
 
 ```bash
-npm install @multicoder/auth
+npm install multicoder
 ```
 
 Or install globally to use the CLI anywhere:
 
 ```bash
-npm install -g @multicoder/auth
+npm install -g multicoder
 ```
 
 ## Quick Start
@@ -78,7 +82,7 @@ npm install -g @multicoder/auth
 ### Programmatic Usage
 
 ```typescript
-import { ProfileManager, authRegistry } from '@multicoder/auth';
+import { ProfileManager, authRegistry } from 'multicoder';
 
 // Initialize profile manager
 const profileManager = new ProfileManager();
@@ -169,7 +173,7 @@ The module automatically migrates configurations from:
 ### Creating Custom Authenticators
 
 ```typescript
-import { BaseAuthenticator, authRegistry } from '@multicoder/auth';
+import { BaseAuthenticator, authRegistry } from 'multicoder';
 
 class MyCustomAuth extends BaseAuthenticator {
   async authenticate(options) {
@@ -188,7 +192,7 @@ authRegistry.register('my-provider', new MyCustomAuth());
 ### Environment Variable Management
 
 ```typescript
-import { SystemEnvironmentManager } from '@multicoder/auth';
+import { SystemEnvironmentManager } from 'multicoder';
 
 const envManager = new SystemEnvironmentManager();
 
@@ -314,8 +318,8 @@ ISC License - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- Issues: [GitHub Issues](https://github.com/yourusername/auth/issues)
-- Documentation: [Full Documentation](https://docs.example.com)
+- Issues: [GitHub Issues](https://github.com/ljyou001/multicoder-auth/issues)
+- Documentation: [npm Package](https://www.npmjs.com/package/multicoder)
 
 ---
 

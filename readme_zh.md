@@ -1,8 +1,12 @@
+# multicoder
+
 <div align="center">
+
+<img src="./asset/icon.png" alt="multicoder icon" width="160" />
 
 **多提供商 AI 开发的统一身份验证与配置管理方案**
 
-[![npm version](https://img.shields.io/npm/v/@multicoder/auth.svg)](https://www.npmjs.com/package/@multicoder/auth)
+[![npm version](https://img.shields.io/npm/v/multicoder.svg)](https://www.npmjs.com/package/multicoder)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 
@@ -14,11 +18,11 @@
 
 ## 项目简介
 
-**@multicoder/auth** 是一个为多 AI 提供商开发场景设计的综合性身份验证与配置管理解决方案。它提供统一的接口来管理凭据、切换配置文件，并在 Anthropic Claude、Google Gemini、OpenAI/Codex、Amazon Q 等多个平台间保持一致的认证状态。
+**multicoder** 是一个为多 AI 提供商开发场景设计的综合性身份验证与配置管理解决方案。它提供统一的接口来管理凭据、切换配置文件，并在 Anthropic Claude、Google Gemini、OpenAI/Codex、Amazon Q 等多个平台间保持一致的认证状态。
 
-无论您是在构建自动化工具、桌面应用程序还是命令行工具，@multicoder/auth 都能帮您消除管理多个 API 密钥和 OAuth 流程的复杂性。
+无论您是在构建自动化工具、桌面应用程序还是命令行工具，multicoder 都能帮您消除管理多个 API 密钥和 OAuth 流程的复杂性。
 
-## 为什么选择 @multicoder/auth?
+## 为什么选择 multicoder?
 
 - **🔐 统一认证**: 为所有 AI 提供商提供一致的 API 接口
 - **👤 配置管理**: 轻松在不同的开发环境之间切换
@@ -64,13 +68,13 @@ coders status
 ## 安装
 
 ```bash
-npm install @multicoder/auth
+npm install multicoder
 ```
 
 或全局安装以在任何位置使用 CLI：
 
 ```bash
-npm install -g @multicoder/auth
+npm install -g multicoder
 ```
 
 ## 快速开始
@@ -78,7 +82,7 @@ npm install -g @multicoder/auth
 ### 编程方式使用
 
 ```typescript
-import { ProfileManager, authRegistry } from '@multicoder/auth';
+import { ProfileManager, authRegistry } from 'multicoder';
 
 // 初始化配置管理器
 const profileManager = new ProfileManager();
@@ -169,7 +173,7 @@ coders profile delete my-profile
 ### 创建自定义认证器
 
 ```typescript
-import { BaseAuthenticator, authRegistry } from '@multicoder/auth';
+import { BaseAuthenticator, authRegistry } from 'multicoder';
 
 class MyCustomAuth extends BaseAuthenticator {
   async authenticate(options) {
@@ -188,7 +192,7 @@ authRegistry.register('my-provider', new MyCustomAuth());
 ### 环境变量管理
 
 ```typescript
-import { SystemEnvironmentManager } from '@multicoder/auth';
+import { SystemEnvironmentManager } from 'multicoder';
 
 const envManager = new SystemEnvironmentManager();
 
@@ -314,8 +318,8 @@ ISC 许可证 - 详见 [LICENSE](LICENSE) 文件。
 
 ## 支持
 
-- Issues: [GitHub Issues](https://github.com/yourusername/auth/issues)
-- 文档: [完整文档](https://docs.example.com)
+- Issues: [GitHub Issues](https://github.com/ljyou001/multicoder-auth/issues)
+- 文档: [npm 包](https://www.npmjs.com/package/multicoder)
 
 ---
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { createCliContext } from './context.js';
 import { handleProfileCommand } from './commands/profile.js';
 import {
@@ -86,4 +88,12 @@ export async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise
     console.error('Error:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
+}
+
+// Run CLI if this module is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  runCli().catch((error) => {
+    console.error('Fatal error:', error);
+    process.exit(1);
+  });
 }

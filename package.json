@@ -1,16 +1,28 @@
 {
-  "name": "@multicoder/auth",
+  "name": "multicoder",
   "version": "1.0.0",
-  "description": "Multicoder authentication and profile management module.",
+  "description": "Unified authentication and profile management for multi-provider AI development - supporting Anthropic Claude, Google Gemini, OpenAI/Codex, Amazon Q, and more.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "coders": "./dist/cli/index.js"
+  },
   "files": [
     "dist",
-    "examples",
-    "scripts",
-    "tests"
+    "README.md",
+    "readme_zh.md",
+    "LICENSE"
   ],
+  "author": "Multicoder Team",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ljyou001/multicoder-auth.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ljyou001/multicoder-auth/issues"
+  },
+  "homepage": "https://github.com/ljyou001/multicoder-auth#readme",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -47,9 +59,23 @@
     "test:claude": "npm run build && node --test tests/unit/providers/claude.test.js"
   },
   "keywords": [
+    "authentication",
     "auth",
+    "profile",
     "profiles",
-    "multicoder"
+    "credential-management",
+    "multicoder",
+    "ai",
+    "anthropic",
+    "claude",
+    "gemini",
+    "openai",
+    "codex",
+    "amazon-q",
+    "oauth",
+    "api-key",
+    "multi-provider",
+    "cli"
   ],
   "license": "ISC",
   "dependencies": {},

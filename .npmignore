@@ -1,0 +1,47 @@
+# Source files
+src/
+tsconfig.json
+*.tsbuildinfo
+
+# Tests
+tests/
+*.test.js
+*.test.ts
+
+# Development files
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Documentation (keep README files)
+docs/
+
+# Scripts (optional - keeping as specified in package.json)
+# scripts/
+
+# Examples (optional - keeping as specified in package.json)
+# examples/
+
+# Build artifacts
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
