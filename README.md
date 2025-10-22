@@ -10,6 +10,8 @@
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 
+<a href="https://www.buymeacoffee.com/ljyou001" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 40px !important;width: 150px !important;" ></a>
+
 [English](./README.md) | [简体中文](./readme_zh.md)
 
 </div>
@@ -325,6 +327,6 @@ ISC License - see [LICENSE](LICENSE) file for details.
 
 <div align="center">
 
-**Built with ❤️ for the AI development community**
+**Built with ❤️ for the AI development community by ljyou001**
 
 </div>
