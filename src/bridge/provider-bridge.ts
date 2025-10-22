@@ -112,6 +112,14 @@ class BridgeService {
           await this.handleLoginWithApiKey(id, params);
           break;
 
+        case 'getAuthOptions':
+          await this.handleGetAuthOptions(id, params);
+          break;
+
+        case 'linkExistingCredential':
+          await this.handleLinkExistingCredential(id, params);
+          break;
+
         default:
           this.sendResponse(id, undefined, `Unknown method: ${method}`);
       }
@@ -194,8 +202,45 @@ class BridgeService {
       } else {
         // Add provider to existing profile
         await this.profileManager.addProviderToProfile(profileName, provider, 'managed', { apiKey });
+        profile = this.profileManager.get(profileName);
       }
 
+      this.sendResponse(id, { success: true, profile });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.sendResponse(id, { success: false }, errorMessage);
+    }
+  }
+
+  private async handleGetAuthOptions(
+    id: number,
+    params: Record<string, any>
+  ): Promise<void> {
+    const { profileName, provider } = params as { profileName: string; provider: string };
+
+    try {
+      const options = await this.profileManager.getAuthOptions(profileName, provider);
+      this.sendResponse(id, { options });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.sendResponse(id, undefined, errorMessage);
+    }
+  }
+
+  private async handleLinkExistingCredential(
+    id: number,
+    params: Record<string, any>
+  ): Promise<void> {
+    const { profileName, provider, copyToManaged } = params as {
+      profileName: string;
+      provider: string;
+      copyToManaged?: boolean;
+    };
+
+    try {
+      const profile = await this.profileManager.linkExistingCredential(profileName, provider, {
+        copyToManaged,
+      });
       this.sendResponse(id, { success: true, profile });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);

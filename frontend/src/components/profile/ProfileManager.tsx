@@ -24,14 +24,17 @@ import {
   loginWithApiKey,
   triggerProviderLogin,
   getCurrentProfile,
+  getAuthOptions as fetchAuthOptions,
+  linkExistingCredential,
+  type AuthOptions as ServiceAuthOptions,
 } from '@/services/profileService';
 import type { ProviderId, Profile } from '@/types';
 
 const PROVIDERS: ProviderId[] = ['claude', 'codex', 'gemini'];
-const DEFAULT_PROVIDER: ProviderId = 'claude';
 
 type ApiKeyType = 'gemini' | 'vertex';
 type CodexApiType = 'openai' | 'azure';
+type AuthOptions = ServiceAuthOptions;
 
 interface ProfileManagerProps {
   onClose?: () => void;
@@ -47,7 +50,8 @@ export function ProfileManager({ onClose }: ProfileManagerProps) {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [profileName, setProfileName] = useState('');
-  const [selectedProvider, setSelectedProvider] = useState<ProviderId>(DEFAULT_PROVIDER);
+  const [selectedProvider, setSelectedProvider] = useState<ProviderId>('claude');
+  const [authOptions, setAuthOptions] = useState<AuthOptions | null>(null);
   const [apiKey, setApiKey] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
   const [apiKeyType, setApiKeyType] = useState<ApiKeyType>('gemini');
@@ -60,7 +64,6 @@ export function ProfileManager({ onClose }: ProfileManagerProps) {
   const [isLocallyCollapsed, setIsLocallyCollapsed] = useState(false);
   const [isLocallyClosed, setIsLocallyClosed] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
-  const [newProfileProvider, setNewProfileProvider] = useState<ProviderId>(DEFAULT_PROVIDER);
 
   useEffect(() => {
     loadProfiles();
@@ -137,6 +140,58 @@ export function ProfileManager({ onClose }: ProfileManagerProps) {
     } catch (error) {
       console.error('Failed to load profiles:', error);
     }
+  };
+
+  const refreshAuthOptions = async (profileName: string, provider: ProviderId) => {
+    try {
+      const result = await fetchAuthOptions(profileName, provider);
+      setAuthOptions(result?.options ?? null);
+    } catch (error) {
+      console.error('[ProfileManager] Failed to fetch auth options:', error);
+      setAuthOptions(null);
+    }
+  };
+
+  const attemptAutoLinkExistingCredential = async (
+    profileName: string,
+    provider: ProviderId,
+    maxAttempts = 20,
+    delayMs = 1500
+  ): Promise<boolean> => {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const result = await fetchAuthOptions(profileName, provider);
+        const options = result?.options ?? null;
+        setAuthOptions(options);
+
+        if (options?.linkedCredential) {
+          return true;
+        }
+
+        if (options?.canLinkExistingCredential && options.existingCredential?.valid) {
+          try {
+            const linkResult = await linkExistingCredential(profileName, provider);
+            if (linkResult?.success) {
+              return true;
+            }
+          } catch (linkError) {
+            const message = String(linkError);
+            if (message.includes('already linked') || message.includes('already exists')) {
+              return true;
+            }
+            console.warn('[ProfileManager] Failed to link existing credential:', linkError);
+          }
+        }
+      } catch (error) {
+        console.warn('[ProfileManager] Auto-link auth options fetch failed:', error);
+      }
+
+      if (attempt < maxAttempts - 1) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+
+    return false;
   };
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -266,11 +321,10 @@ export function ProfileManager({ onClose }: ProfileManagerProps) {
 
     setLoading(true);
     try {
-      await createProfile({ name: trimmedName, provider: newProfileProvider });
+      await createProfile({ name: trimmedName, provider: 'claude' });
       await loadProfiles();
       setShowCreateDialog(false);
       setProfileName('');
-      setNewProfileProvider(DEFAULT_PROVIDER);
     } catch (error) {
       alert(`Failed to create profile: ${error}`);
     } finally {
@@ -286,8 +340,10 @@ export function ProfileManager({ onClose }: ProfileManagerProps) {
     event.stopPropagation();
     setSelectedProfile(profile);
     setSelectedProvider(provider);
+    setAuthOptions(null);
     setShowLoginDialog(true);
     setShowProviderMenu(null);
+    void refreshAuthOptions(profile.name, provider);
   };
 
   const handleLoginWithApiKey = async () => {
@@ -318,6 +374,7 @@ export function ProfileManager({ onClose }: ProfileManagerProps) {
       await loginWithApiKey(selectedProfile.name, selectedProvider, apiKey, metadata);
       await loadProfiles();
       setShowLoginDialog(false);
+      setAuthOptions(null);
       setApiKey('');
       setBaseUrl('');
       setAzureResourceName('');
@@ -329,14 +386,54 @@ export function ProfileManager({ onClose }: ProfileManagerProps) {
     }
   };
 
+  const handleApplyExistingCredential = async () => {
+    if (!selectedProfile) return;
+
+    setLoading(true);
+    try {
+      const result = await linkExistingCredential(selectedProfile.name, selectedProvider);
+      if (result?.success) {
+        await loadProfiles();
+        alert('Credential linked successfully!');
+        setShowLoginDialog(false);
+        setAuthOptions(null);
+      } else {
+        alert('Failed to link credential. Please try again.');
+      }
+    } catch (error) {
+      alert(`Failed to link credential: ${error}`);
+    } finally {
+      setLoading(false);
+      if (selectedProfile) {
+        void refreshAuthOptions(selectedProfile.name, selectedProvider);
+      }
+    }
+  };
+
   const handleBrowserLogin = async () => {
     if (!selectedProfile) return;
 
     setLoading(true);
     try {
       const message = await triggerProviderLogin(selectedProvider);
-      alert(message);
-      setShowLoginDialog(false);
+
+      let linked = false;
+      try {
+        linked = await attemptAutoLinkExistingCredential(selectedProfile.name, selectedProvider);
+        if (linked) {
+          await loadProfiles();
+          alert('Login successful!');
+          setShowLoginDialog(false);
+          setAuthOptions(null);
+        }
+      } catch (error) {
+        console.warn('[ProfileManager] Automatic credential link failed:', error);
+      }
+
+      if (!linked) {
+        alert(`${message}\n\nWhen the browser flow is finished, click "Apply Existing Credential" to complete the link.`);
+        void refreshAuthOptions(selectedProfile.name, selectedProvider);
+      }
     } catch (error) {
       alert(`Login failed: ${error}`);
     } finally {
@@ -397,8 +494,6 @@ export function ProfileManager({ onClose }: ProfileManagerProps) {
         onClose={() => setShowCreateDialog(false)}
         profileName={profileName}
         onProfileNameChange={setProfileName}
-        newProfileProvider={newProfileProvider}
-        onProviderChange={setNewProfileProvider}
         onCreateProfile={handleCreateProfile}
         loading={loading}
       />
@@ -408,6 +503,7 @@ export function ProfileManager({ onClose }: ProfileManagerProps) {
         onClose={() => {
           setShowLoginDialog(false);
           setShowProviderMenu(null);
+          setAuthOptions(null);
         }}
         selectedProfile={selectedProfile}
         selectedProvider={selectedProvider}
@@ -426,12 +522,88 @@ export function ProfileManager({ onClose }: ProfileManagerProps) {
         location={location}
         onLocationChange={setLocation}
         loading={loading}
+        authOptions={authOptions}
+        onApplyExistingCredential={handleApplyExistingCredential}
         onLoginWithApiKey={handleLoginWithApiKey}
         onBrowserLogin={handleBrowserLogin}
       />
     </>
   );
 }
+
+interface ExistingCredentialCardProps {
+  authOptions: AuthOptions | null;
+  loading: boolean;
+  onApplyExistingCredential: () => void | Promise<void>;
+}
+
+function ExistingCredentialCard({ authOptions, loading, onApplyExistingCredential }: ExistingCredentialCardProps) {
+  if (!authOptions) {
+    return (
+      <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-neutral-400">
+        Checking for existing credentials...
+      </div>
+    );
+  }
+
+  const credential = authOptions.existingCredential;
+
+  if (authOptions.linkedCredential) {
+    const sourceLabel =
+      authOptions.linkedCredential.credentialSource === 'managed'
+        ? 'API Key'
+        : authOptions.linkedCredential.credentialSource === 'native'
+          ? 'OAuth'
+          : 'Environment';
+
+    return (
+      <div className="mt-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
+        <p>
+          An existing {sourceLabel} credential is already linked. You can close this dialog and start
+          using the provider.
+        </p>
+      </div>
+    );
+  }
+
+  if (authOptions.canLinkExistingCredential && credential) {
+    const expiresLabel =
+      credential.expiresAt != null ? new Date(credential.expiresAt).toLocaleString() : null;
+
+    return (
+      <div className="mt-5 rounded-2xl border border-amber-400/40 bg-amber-500/10 p-4 text-sm text-amber-100">
+        <div className="space-y-2">
+          <p>
+            Found an existing {credential.source === 'native' ? 'OAuth' : 'API Key'} credential
+            {credential.path ? ` · ${credential.path}` : ''}
+          </p>
+          {expiresLabel && <p className="text-xs text-amber-200/80">Expires at: {expiresLabel}</p>}
+          {!credential.valid && (
+            <p className="text-xs text-red-200">
+              The credential looks expired. Please re-run the browser login before applying it.
+            </p>
+          )}
+          <button
+            onClick={onApplyExistingCredential}
+            disabled={loading || !credential.valid}
+            className="w-full rounded-xl border border-amber-400/60 bg-amber-500/20 px-4 py-2 text-sm font-medium text-amber-100 transition hover:border-amber-400 hover:bg-amber-500/30 disabled:opacity-50"
+          >
+            Apply Existing Credential
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-neutral-400">
+      {authOptions.supportsOAuth
+        ? 'No existing credential detected. Use browser OAuth or an API key to continue.'
+        : 'This provider currently supports API key authentication only.'}
+    </div>
+  );
+}
+
 interface WindowControlsProps {
   onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onToggleMaximize: () => void;
@@ -639,8 +811,6 @@ interface CreateProfileDialogProps {
   onClose: () => void | Promise<void>;
   profileName: string;
   onProfileNameChange: (value: string) => void;
-  newProfileProvider: ProviderId;
-  onProviderChange: (provider: ProviderId) => void;
   onCreateProfile: () => void | Promise<void>;
   loading: boolean;
 }
@@ -650,8 +820,6 @@ function CreateProfileDialog({
   onClose,
   profileName,
   onProfileNameChange,
-  newProfileProvider,
-  onProviderChange,
   onCreateProfile,
   loading,
 }: CreateProfileDialogProps) {
@@ -688,21 +856,7 @@ function CreateProfileDialog({
               placeholder="e.g., Workspace, Production"
               autoFocus
             />
-          </div>
-          <div>
-            <label className="mb-2 block text-sm font-medium text-neutral-300">Default Provider</label>
-            <select
-              value={newProfileProvider}
-              onChange={(event) => onProviderChange(event.target.value as ProviderId)}
-              className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-neutral-100 outline-none transition focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/25"
-            >
-              {PROVIDERS.map((provider) => (
-                <option key={provider} value={provider}>
-                  {provider.toUpperCase()}
-                </option>
-              ))}
-            </select>
-            <p className="mt-1 text-xs text-neutral-500">You can link more providers after creation.</p>
+            <p className="mt-1 text-xs text-neutral-500">You can link providers after creation.</p>
           </div>
         </div>
         <div className="mt-6 flex gap-2">
@@ -744,6 +898,8 @@ interface ProviderLoginDialogProps {
   location: string;
   onLocationChange: (value: string) => void;
   loading: boolean;
+  authOptions: AuthOptions | null;
+  onApplyExistingCredential: () => void | Promise<void>;
   onLoginWithApiKey: () => void | Promise<void>;
   onBrowserLogin: () => void | Promise<void>;
 }
@@ -768,6 +924,8 @@ function ProviderLoginDialog({
   location,
   onLocationChange,
   loading,
+  authOptions,
+  onApplyExistingCredential,
   onLoginWithApiKey,
   onBrowserLogin,
 }: ProviderLoginDialogProps) {
@@ -800,6 +958,12 @@ function ProviderLoginDialog({
             <X className="h-4 w-4" />
           </button>
         </div>
+
+        <ExistingCredentialCard
+          authOptions={authOptions}
+          loading={loading}
+          onApplyExistingCredential={onApplyExistingCredential}
+        />
 
         {selectedProvider === 'codex' && (
           <div className="mt-5 space-y-4">
@@ -870,7 +1034,7 @@ function ProviderLoginDialog({
               </button>
               <button
                 onClick={onBrowserLogin}
-                disabled={loading}
+                disabled={loading || (authOptions !== null && !authOptions.supportsOAuth)}
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-neutral-200 transition hover:border-white/20 hover:bg-white/10 disabled:opacity-50"
               >
                 {loading ? 'Opening...' : 'Browser Login (OAuth)'}
@@ -936,7 +1100,7 @@ function ProviderLoginDialog({
               </button>
               <button
                 onClick={onBrowserLogin}
-                disabled={loading}
+                disabled={loading || (authOptions !== null && !authOptions.supportsOAuth)}
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-neutral-200 transition hover:border-white/20 hover:bg-white/10 disabled:opacity-50"
               >
                 {loading ? 'Opening...' : 'Browser Login (OAuth)'}
@@ -977,7 +1141,7 @@ function ProviderLoginDialog({
               </button>
               <button
                 onClick={onBrowserLogin}
-                disabled={loading}
+                disabled={loading || (authOptions !== null && !authOptions.supportsOAuth)}
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-neutral-200 transition hover:border-white/20 hover:bg-white/10 disabled:opacity-50"
               >
                 {loading ? 'Opening...' : 'Browser Login (OAuth)'}

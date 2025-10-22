@@ -301,15 +301,29 @@ export class ProfileManager {
     // Save the API key
     await this.credentialManager.saveApiKey(providerId, name, apiKey);
 
+    const credInfo = await this.credentialManager.getCredentialInfo(
+      providerId,
+      name
+    );
+
     // Create the profile
     const now = Date.now();
+    const providerAuth: Profile['providers'][string] = {
+      credentialSource: credInfo?.source === 'native' ? 'native' : 'managed',
+      lastAuth: now,
+    };
+
+    if (credInfo?.path) {
+      providerAuth.credentialPath = credInfo.path;
+    }
+    if (credInfo?.expiresAt) {
+      providerAuth.expiresAt = credInfo.expiresAt;
+    }
+
     const profile: Profile = {
       name,
       providers: {
-        [providerId]: {
-          credentialSource: 'managed',
-          lastAuth: now,
-        }
+        [providerId]: providerAuth
       },
       lastProvider: providerId,
       model: options?.model,
@@ -348,14 +362,20 @@ export class ProfileManager {
     }
 
     const now = Date.now();
+    const providerAuth: Profile['providers'][string] = {
+      credentialSource,
+      lastAuth: now,
+      expiresAt: credInfo?.expiresAt,
+    };
+
+    if (credInfo?.path) {
+      providerAuth.credentialPath = credInfo.path;
+    }
+
     const profile: Profile = {
       name,
       providers: {
-        [providerId]: {
-          credentialSource,
-          lastAuth: now,
-          expiresAt: credInfo?.expiresAt,
-        }
+        [providerId]: providerAuth
       },
       lastProvider: providerId,
       model: options?.model,
@@ -518,10 +538,27 @@ export class ProfileManager {
     }
 
     // Add provider to profile
-    profile.providers[providerId] = {
+    const providerAuth: Profile['providers'][string] = {
       credentialSource,
       lastAuth: Date.now(),
     };
+
+    try {
+      const credInfo = await this.credentialManager.getCredentialInfo(
+        providerId,
+        profile.name
+      );
+      if (credInfo?.path) {
+        providerAuth.credentialPath = credInfo.path;
+      }
+      if (credInfo?.expiresAt) {
+        providerAuth.expiresAt = credInfo.expiresAt;
+      }
+    } catch {
+      // Ignore metadata lookup errors
+    }
+
+    profile.providers[providerId] = providerAuth;
 
     // Update last provider if this is the first provider
     if (!profile.lastProvider) {
@@ -529,6 +566,113 @@ export class ProfileManager {
     }
 
     this.update(profile);
+  }
+
+  /**
+   * Link an existing credential (native or managed) to a profile without prompting the user
+   */
+  async linkExistingCredential(
+    profileName: string,
+    providerId: string,
+    options?: {
+      copyToManaged?: boolean;
+    }
+  ): Promise<Profile> {
+    const profile = this.profiles.get(profileName);
+    if (!profile) {
+      throw new Error(`Profile ${profileName} not found`);
+    }
+
+    if (profile.providers[providerId]) {
+      throw new Error(`Provider ${providerId} is already linked to profile ${profileName}`);
+    }
+
+    const credInfo = await this.credentialManager.getCredentialInfo(providerId, profileName);
+    if (!credInfo) {
+      throw new Error(`No existing credentials found for provider ${providerId}`);
+    }
+
+    const shouldCopyToManaged = options?.copyToManaged ?? false;
+    let credentialSource: 'native' | 'managed';
+
+    if (credInfo.source === 'managed') {
+      credentialSource = 'managed';
+    } else if (shouldCopyToManaged) {
+      await this.credentialManager.copyNativeToManaged(providerId, profileName);
+      credentialSource = 'managed';
+    } else {
+      credentialSource = 'native';
+    }
+
+    await this.addProviderToProfile(profileName, providerId, credentialSource, {
+      copyToManaged: shouldCopyToManaged && credentialSource === 'native',
+    });
+
+    const updatedProfile = this.profiles.get(profileName);
+    if (!updatedProfile) {
+      throw new Error(`Failed to refresh profile ${profileName} after linking credentials`);
+    }
+
+    return updatedProfile;
+  }
+
+  /**
+   * Get available authentication options and credential status for a provider
+   */
+  async getAuthOptions(
+    profileName: string,
+    providerId: string
+  ): Promise<{
+    supportsOAuth: boolean;
+    supportsApiKey: boolean;
+    hasNativeCredentialPath: boolean;
+    existingCredential: {
+      source: 'native' | 'managed';
+      path?: string;
+      expiresAt?: number;
+      valid: boolean;
+    } | null;
+    linkedCredential: Profile['providers'][string] | null;
+    canLinkExistingCredential: boolean;
+  }> {
+    const profile = this.profiles.get(profileName);
+    if (!profile) {
+      throw new Error(`Profile ${profileName} not found`);
+    }
+
+    const providerConfig = this.credentialManager.getAuthenticationOptions(providerId);
+
+    let existingCredential: {
+      source: 'native' | 'managed';
+      path?: string;
+      expiresAt?: number;
+      valid: boolean;
+    } | null = null;
+
+    try {
+      const credInfo = await this.credentialManager.getCredentialInfo(providerId, profileName);
+      if (credInfo) {
+        existingCredential = {
+          source: credInfo.source as 'native' | 'managed',
+          path: credInfo.path,
+          expiresAt: credInfo.expiresAt,
+          valid: this.credentialManager.isCredentialValid(credInfo),
+        };
+      }
+    } catch {
+      existingCredential = null;
+    }
+
+    const linkedCredential = profile.providers[providerId] ?? null;
+
+    return {
+      supportsOAuth: providerConfig.hasOAuth,
+      supportsApiKey: providerConfig.hasApiKey,
+      hasNativeCredentialPath: providerConfig.hasNativeCredentials,
+      existingCredential,
+      linkedCredential,
+      canLinkExistingCredential: Boolean(existingCredential) && !linkedCredential,
+    };
   }
 
   /**

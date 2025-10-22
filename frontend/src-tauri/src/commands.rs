@@ -3,6 +3,8 @@ use serde::{Serialize, Deserialize};
 use std::sync::{Arc, Mutex};
 use crate::state::AppState;
 use crate::bridge::BridgeClient;
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 
 // Helper to get bridge client or return error
 fn get_bridge(bridge_state: &tauri::State<Arc<BridgeClient>>) -> Result<Arc<BridgeClient>, String> {
@@ -251,6 +253,30 @@ pub async fn check_provider_auth(
 }
 
 #[tauri::command]
+pub async fn get_auth_options(
+    bridge_state: tauri::State<'_, Arc<BridgeClient>>,
+    profile_name: String,
+    provider: String,
+) -> Result<serde_json::Value, String> {
+    let bridge_clone = get_bridge(&bridge_state)?;
+    bridge_clone
+        .get_auth_options(profile_name, provider)
+        .await
+}
+
+#[tauri::command]
+pub async fn link_existing_credential(
+    bridge_state: tauri::State<'_, Arc<BridgeClient>>,
+    profile_name: String,
+    provider: String,
+) -> Result<serde_json::Value, String> {
+    let bridge_clone = get_bridge(&bridge_state)?;
+    bridge_clone
+        .link_existing_credential(profile_name, provider)
+        .await
+}
+
+#[tauri::command]
 pub async fn trigger_provider_login(provider: String) -> Result<String, String> {
     println!("trigger_provider_login: provider={}", provider);
 
@@ -259,9 +285,14 @@ pub async fn trigger_provider_login(provider: String) -> Result<String, String> 
     // Trigger the native CLI login
     let command = match provider.as_str() {
         "codex" => {
-            let output = Command::new(if cfg!(target_os = "windows") { "codex.cmd" } else { "codex" })
-                .arg("login")
-                .output();
+            let mut cmd = Command::new(if cfg!(target_os = "windows") { "codex.cmd" } else { "codex" });
+            cmd.arg("login");
+            #[cfg(target_os = "windows")]
+            {
+                const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+                cmd.creation_flags(CREATE_NO_WINDOW);
+            }
+            let output = cmd.output();
             match output {
                 Ok(_) => Ok("Login initiated. Please complete in browser.".to_string()),
                 Err(e) => Err(format!("Failed to start codex login: {}", e)),
@@ -315,12 +346,22 @@ pub async fn trigger_provider_login(provider: String) -> Result<String, String> 
         },
         "gemini" => {
             // Run a simple query to trigger OAuth flow (gemini CLI opens browser automatically)
-            let output = Command::new(if cfg!(target_os = "windows") { "gemini.cmd" } else { "gemini" })
-                .arg("hello")
-                .output();
-            match output {
-                Ok(_) => Ok("Login initiated. Gemini CLI will open browser for authentication.".to_string()),
-                Err(e) => Err(format!("Failed to start gemini login: {}", e)),
+            if cfg!(target_os = "windows") {
+                // Use `start` so the CLI runs in its own console without blocking the app
+                // Launch minimized to reduce visual disruption while still allowing interaction
+                let result = Command::new("cmd")
+                    .args(&["/C", "start", "/MIN", "", "gemini.cmd", "hello"])
+                    .spawn();
+                match result {
+                    Ok(_) => Ok("Login initiated. Gemini CLI will open browser for authentication.".to_string()),
+                    Err(e) => Err(format!("Failed to start gemini login: {}", e)),
+                }
+            } else {
+                let output = Command::new("gemini").arg("hello").output();
+                match output {
+                    Ok(_) => Ok("Login initiated. Gemini CLI will open browser for authentication.".to_string()),
+                    Err(e) => Err(format!("Failed to start gemini login: {}", e)),
+                }
             }
         },
         _ => Err(format!("Unknown provider: {}", provider)),

@@ -6,6 +6,20 @@ export interface CreateProfileParams {
   provider: ProviderId;
 }
 
+export interface AuthOptions {
+  supportsOAuth: boolean;
+  supportsApiKey: boolean;
+  hasNativeCredentialPath: boolean;
+  existingCredential: {
+    source: 'native' | 'managed';
+    path?: string;
+    expiresAt?: number;
+    valid: boolean;
+  } | null;
+  linkedCredential: Profile['providers'][string] | null;
+  canLinkExistingCredential: boolean;
+}
+
 /**
  * Create a new profile
  */
@@ -65,6 +79,26 @@ export async function checkProviderLogin(provider: ProviderId, profileName: stri
  */
 export async function triggerProviderLogin(provider: ProviderId): Promise<string> {
   return await invoke('trigger_provider_login', { provider });
+}
+
+/**
+ * Get authentication options and credential status for a provider
+ */
+export async function getAuthOptions(
+  profileName: string,
+  provider: ProviderId
+): Promise<{ options: AuthOptions }> {
+  return await invoke('get_auth_options', { profileName, provider });
+}
+
+/**
+ * Link existing credentials (native or managed) to a profile
+ */
+export async function linkExistingCredential(
+  profileName: string,
+  provider: ProviderId
+): Promise<{ success: boolean; profile?: Profile }> {
+  return await invoke('link_existing_credential', { profileName, provider });
 }
 
 /**

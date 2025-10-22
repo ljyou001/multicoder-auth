@@ -128,12 +128,23 @@ impl BridgeClient {
         println!("Setting bridge working directory to user home: {:?}", working_dir);
 
         // Spawn the Node.js bridge service with stderr piped for better error capture
-        let mut child = Command::new(node_cmd)
+        let mut command = Command::new(node_cmd);
+        command
             .arg(&bridge_path)
             .current_dir(working_dir)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
+            .stderr(Stdio::piped());
+
+        // On Windows, hide the console window
+        #[cfg(target_os = "windows")]
+        {
+            use std::os::windows::process::CommandExt;
+            const CREATE_NO_WINDOW: u32 = 0x08000000;
+            command.creation_flags(CREATE_NO_WINDOW);
+        }
+
+        let mut child = command
             .spawn()
             .map_err(|e| format!("Failed to spawn bridge service: {}", e))?;
 
@@ -536,6 +547,38 @@ impl BridgeClient {
 
         self.send_request("loginWithApiKey".to_string(), params)
             .await
+    }
+
+    /// Get authentication options for a provider/profile combination
+    pub async fn get_auth_options(
+        &self,
+        profile_name: String,
+        provider: String,
+    ) -> Result<serde_json::Value, String> {
+        self.send_request(
+            "getAuthOptions".to_string(),
+            serde_json::json!({
+                "profileName": profile_name,
+                "provider": provider,
+            }),
+        )
+        .await
+    }
+
+    /// Link existing credentials to a profile
+    pub async fn link_existing_credential(
+        &self,
+        profile_name: String,
+        provider: String,
+    ) -> Result<serde_json::Value, String> {
+        self.send_request(
+            "linkExistingCredential".to_string(),
+            serde_json::json!({
+                "profileName": profile_name,
+                "provider": provider,
+            }),
+        )
+        .await
     }
 
     /// Shutdown the bridge service

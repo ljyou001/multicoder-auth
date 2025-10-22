@@ -43,6 +43,8 @@ pub fn run() {
             commands::read_file,
             // Auth commands
             commands::check_provider_auth,
+            commands::get_auth_options,
+            commands::link_existing_credential,
             commands::trigger_provider_login,
             // Permission commands
             commands::approve_action,
