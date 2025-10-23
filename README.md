@@ -9,6 +9,9 @@
 [![npm version](https://img.shields.io/npm/v/multicoder.svg)](https://www.npmjs.com/package/multicoder)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![Download](https://img.shields.io/github/downloads/ljyou001/multicoder-auth/total)](https://github.com/ljyou001/multicoder-auth/releases)
+
+**[Download Latest Release](https://github.com/ljyou001/multicoder-auth/releases)**
 
 <a href="https://www.buymeacoffee.com/ljyou001" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 40px !important;width: 150px !important;" ></a>
 
@@ -28,12 +31,21 @@ Whether you're building automation tools, desktop applications, or command-line 
 
 - **🔐 Unified Authentication**: One consistent API for all AI providers
 - **👤 Profile Management**: Easily switch between different development contexts
+- **🖥️ GUI & CLI Options**: Choose between intuitive desktop app or powerful command-line tools
 - **🔄 Auto Migration**: Seamlessly migrates from legacy configurations
 - **🌍 Cross-Platform**: Works on Windows, macOS, and Linux
-- **🛠️ Developer-Friendly**: CLI tools, programmatic API, and rich examples
+- **🛠️ Developer-Friendly**: Desktop app, CLI tools, programmatic API, and rich examples
 - **🔌 Extensible**: Plugin-based architecture for adding new providers
 
 ## Key Features
+
+### Desktop GUI Application
+Modern Tauri-based desktop application for visual profile management:
+- **Intuitive Interface**: User-friendly GUI for all profile operations
+- **Visual Status Dashboard**: See authentication status and active profiles at a glance
+- **One-Click Operations**: Create, switch, and manage profiles without typing commands
+- **Cross-Platform Native**: Native performance on Windows, macOS, and Linux
+- **No CLI Required**: Perfect for users who prefer graphical interfaces
 
 ### Profile-Aware Credential Management
 Isolate credentials by profile with automatic migration from legacy `multicoder` and `unycode` configurations. Each profile maintains its own set of provider credentials, making it easy to manage multiple accounts or environments.
@@ -69,6 +81,8 @@ coders status
 
 ## Installation
 
+### NPM Package (CLI & Library)
+
 ```bash
 npm install multicoder
 ```
@@ -79,7 +93,32 @@ Or install globally to use the CLI anywhere:
 npm install -g multicoder
 ```
 
+### Desktop Application (GUI)
+
+Download the pre-built desktop application from the [Releases page](https://github.com/ljyou001/multicoder-auth/releases) for your platform:
+
+- **Windows**: `.exe` installer
+- **macOS**: `.dmg` package
+- **Linux**: `.AppImage` or `.deb` package
+
+The desktop application provides the same functionality as the CLI with an intuitive graphical interface - no installation or command-line knowledge required.
+
 ## Quick Start
+
+### Desktop Application (Recommended for Beginners)
+
+1. Download and install the desktop application from [Releases](https://github.com/ljyou001/multicoder-auth/releases)
+2. Launch the application
+3. Click "Create Profile" to set up your first profile
+4. Choose your AI provider (Claude, Gemini, Codex, etc.)
+5. Enter your API key or complete OAuth authentication
+6. Start using your configured profile immediately
+
+The GUI provides visual feedback for all operations and makes it easy to:
+- Manage multiple profiles with a click
+- See authentication status at a glance
+- Switch between different AI providers quickly
+- No terminal or coding required
 
 ### Programmatic Usage
 
@@ -247,6 +286,36 @@ Explore the `examples/` directory for practical use cases:
 - `quick-auth-check.js` - Validate authentication status
 - `simple-env-profile.js` - Basic profile creation workflow
 - `test-cli-v2-auth-status.js` - CLI integration patterns
+
+### Frontend GUI Application
+
+For users who prefer a graphical interface, multicoder includes a Tauri-based desktop application that provides a user-friendly GUI for profile management.
+
+#### Quick Start
+
+```bash
+cd frontend
+npm install
+npm run tauri dev
+```
+
+- `npm run dev` - Launch Vite frontend only for UI debugging
+- `npm run tauri dev` - Launch full Tauri application with Rust backend integration
+
+The frontend provides:
+- **Visual Profile Management**: Create, switch, and delete profiles through an intuitive interface
+- **Provider Configuration**: Easy setup for Claude, Gemini, Codex, and other AI providers
+- **Real-time Status**: View authentication status and active profile at a glance
+- **Cross-platform**: Available for Windows, macOS, and Linux
+
+#### Frontend Architecture
+
+- `src/components/profile/ProfileManager.tsx` - Complete profile management UI component
+- `src/services/profileService.ts` - Service layer wrapping Tauri bridge commands
+- `src/stores/profileStore.ts` - Zustand state management for persistent profile data
+- `src-tauri/` - Rust backend configuration and command handlers
+
+The frontend integrates seamlessly with the core authentication module, providing the same functionality through a modern React-based interface.
 
 ## Troubleshooting
 
